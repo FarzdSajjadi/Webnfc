@@ -1,43 +1,44 @@
 
 
-// HTML
-<!DOCTYPE html>
+// HTML code
 <html>
-  <head>
-    <title>Web NFC Writer</title>
-    <script src="https://rawgit.com/googlearchive/web-nfc/master/web-nfc.js"></script>
-  </head>
-  <body>
-    <h1>Web NFC Writer</h1>
-    <button id="write-btn">Write "Hello World" to NFC Tag</button>
-    <script>
-      // JS
-      const writeBtn = document.querySelector('#write-btn');
-      const message = "Hello World";
+<head>
+  <title>Web NFC Reader</title>
+</head>
+<body>
+  <h1>Web NFC Reader</h1>
+  <p>Scan an NFC tag to write a serial number:</p>
+  <button id="scan-btn">Scan NFC Tag</button>
+  <p id="serial-number"></p>
 
-      // Check if Web NFC is supported
-      if ('NDEFReader' in window) {
-        // Wait for user to click the button
-        writeBtn.addEventListener('click', async () => {
-          try {
-            // Get NFC reader
-            const reader = new NDEFReader();
-            // Scan for NFC tag
-            const ndef = await reader.scan();
-            // Create message to write
-            const textRecord = new NDEFRecordText(message);
-            const message = new NDEFMessage([textRecord]);
-            // Write message to NFC tag
-            await ndef.write(message);
-            console.log("Successfully wrote message to NFC tag");
-          } catch (error) {
-            console.log("Error writing message to NFC tag: " + error);
-          }
-        });
-      } else {
-        // Web NFC is not supported
-        console.log("Web NFC is not supported on this device");
-      }
-    </script>
-  </body>
+  <!-- JavaScript code -->
+  <script>
+    // Check for Web NFC support
+    if ("NDEFReader" in window) {
+      const reader = new NDEFReader();
+
+      // Add event listener to scan button
+      document.getElementById("scan-btn").addEventListener("click", async () => {
+        try {
+          // Scan for NFC tag
+          const tag = await reader.scan();
+
+          // Read NDEF message from tag
+          const message = await tag.readNDEF();
+
+          // Get serial number from NDEF message
+          const serialNumber = message.records[0].data;
+
+          // Display serial number on webpage
+          document.getElementById("serial-number").textContent = "Serial Number: " + serialNumber;
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    } else {
+      // Web NFC not supported, display error message
+      document.getElementById("serial-number").textContent = "Web NFC not supported on this device.";
+    }
+  </script>
+</body>
 </html>
