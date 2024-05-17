@@ -1,30 +1,43 @@
----
-feature_name: Web NFC
-chrome_version: 89
-feature_id: 6261030015467520
-check_min_version: true
----
 
-<h3>Background</h3>
-<p>
-Web NFC aims to provide sites the ability to read and write to NFC tags when
-they are brought in close proximity to the user’s device (usually 5-10 cm, 2-4
-inches). The current scope is limited to NDEF, a lightweight binary message
-format. Low-level I/O operations (e.g. ISO-DEP, NFC-A/B, NFC-F) and Host-based
-Card Emulation (HCE) are not supported within the current scope.
-</p>
 
-<button id="scanButton">Scan</button>
-<button id="writeButton">Write</button>
-<button id="makeReadOnlyButton">Make Read-Only</button>
+// HTML
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Web NFC Writer</title>
+    <script src="https://rawgit.com/googlearchive/web-nfc/master/web-nfc.js"></script>
+  </head>
+  <body>
+    <h1>Web NFC Writer</h1>
+    <button id="write-btn">Write "Hello World" to NFC Tag</button>
+    <script>
+      // JS
+      const writeBtn = document.querySelector('#write-btn');
+      const message = "Hello World";
 
-{% include output_helper.html initial_output_content=initial_output_content %}
-
-<script>
-log = ChromeSamples.log;
-
-if (!("NDEFReader" in window))
-  ChromeSamples.setStatus("Web NFC is not available. Use Chrome on Android.");
-</script>
-
-{% include js_snippet.html filename='index.js' %}
+      // Check if Web NFC is supported
+      if ('NDEFReader' in window) {
+        // Wait for user to click the button
+        writeBtn.addEventListener('click', async () => {
+          try {
+            // Get NFC reader
+            const reader = new NDEFReader();
+            // Scan for NFC tag
+            const ndef = await reader.scan();
+            // Create message to write
+            const textRecord = new NDEFRecordText(message);
+            const message = new NDEFMessage([textRecord]);
+            // Write message to NFC tag
+            await ndef.write(message);
+            console.log("Successfully wrote message to NFC tag");
+          } catch (error) {
+            console.log("Error writing message to NFC tag: " + error);
+          }
+        });
+      } else {
+        // Web NFC is not supported
+        console.log("Web NFC is not supported on this device");
+      }
+    </script>
+  </body>
+</html>
